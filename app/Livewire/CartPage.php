@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Helpers\CartManagement;
+use App\Livewire\Partials\Navbar;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Midtrans\Transaction;
+
+#[Title('Keranjang - Lita Kitchen')]
+
+class CartPage extends Component
+{
+    public $cart_items = [];
+
+    public $grand_total;
+
+    public function mount(){
+        $this->cart_items = CartManagement::getCartItemsFromCookie();
+        $this->grand_total = CartManagement::calculateTotal($this->cart_items);
+    }
+
+    public function removeItem($menu_id){
+        $this->cart_items = CartManagement::removeCartItem($menu_id);
+        $this->grand_total = CartManagement::calculateTotal($this->cart_items); 
+        $this->dispatch('update-cart-count', total_count: count($this->cart_items))->to(Navbar::class);
+    }
+    
+    public function increaseQty($menu_id){
+        $this->cart_items = CartManagement::increaseQuantityToCartItem($menu_id);
+        $this->grand_total = CartManagement::calculateTotal($this->cart_items);
+    }
+
+    public function decreaseQty($menu_id){
+        $this->cart_items = CartManagement::decreaseQuantityToCartItem($menu_id);
+        $this->grand_total = CartManagement::calculateTotal($this->cart_items);
+    }
+
+    public function render()
+    {
+        return view('livewire.cart-page');
+    }
+}
